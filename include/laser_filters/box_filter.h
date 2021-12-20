@@ -81,6 +81,23 @@ class LaserScanBoxFilter : public filters::FilterBase<sensor_msgs::msg::LaserSca
       bool z_min_set = getParam("min_z", min_z);
       bool remove_outside_set = getParam("remove_outside", remove_outside_);
 
+      RCLCPP_INFO(get_logger(), "Current config: ");
+      RCLCPP_INFO(get_logger(), "box_frame: [%s]", box_frame_.c_str());
+      RCLCPP_INFO(get_logger(), "max_x: [%3.3f]", max_x);
+      RCLCPP_INFO(get_logger(), "max_y: [%3.3f]", max_y);
+      RCLCPP_INFO(get_logger(), "max_z: [%3.3f]", max_z);
+      RCLCPP_INFO(get_logger(), "min_x: [%3.3f]", min_x);
+      RCLCPP_INFO(get_logger(), "min_y: [%3.3f]", min_y);
+      RCLCPP_INFO(get_logger(), "min_z: [%3.3f]", min_z);      
+      RCLCPP_INFO(get_logger(), "remove_outside: [%s]", (remove_outside_ ? "true": "false")  );
+
+
+
+
+
+
+
+
       max_.setX(max_x);
       max_.setY(max_y);
       max_.setZ(max_z);
