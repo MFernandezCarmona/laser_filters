@@ -61,7 +61,7 @@ typedef tf2::Vector3 Point;
 namespace laser_filters
 {
 /**
- * @brief This is a filter that removes points in a laser scan inside of a cartesian box.
+ * @brief This is a filter that removes points in a laser scan inside/outside of a cartesian box.
  */
 class LaserScanBoxFilter : public filters::FilterBase<sensor_msgs::msg::LaserScan>, public rclcpp_lifecycle::LifecycleNode
 {
@@ -79,13 +79,14 @@ class LaserScanBoxFilter : public filters::FilterBase<sensor_msgs::msg::LaserSca
       bool x_min_set = getParam("min_x", min_x);
       bool y_min_set = getParam("min_y", min_y);
       bool z_min_set = getParam("min_z", min_z);
+      bool remove_outside_set = getParam("remove_outside", remove_outside_);
 
       max_.setX(max_x);
       max_.setY(max_y);
       max_.setZ(max_z);
       min_.setX(min_x);
       min_.setY(min_y);
-      min_.setZ(min_z);
+      min_.setZ(min_z);      
 
       if (!box_frame_set)
       {
@@ -114,6 +115,11 @@ class LaserScanBoxFilter : public filters::FilterBase<sensor_msgs::msg::LaserSca
       if (!z_min_set)
       {
         RCLCPP_ERROR(get_logger(), "min_z is not set!");
+      }
+      if (!remove_outside_set)
+      {
+        RCLCPP_WARN(get_logger(), "remove_outside is not set! Assuming false (removing points inside box).");
+        remove_outside_ = false;
       }
 
       return box_frame_set && x_max_set && y_max_set && z_max_set &&
@@ -198,9 +204,17 @@ class LaserScanBoxFilter : public filters::FilterBase<sensor_msgs::msg::LaserSca
   private:
     bool inBox(Point &point)
     {
-      return point.x() < max_.x() && point.x() > min_.x() &&
-             point.y() < max_.y() && point.y() > min_.y() &&
-             point.z() < max_.z() && point.z() > min_.z();
+      bool ans;
+
+      ans = point.x() < max_.x() && point.x() > min_.x() &&
+            point.y() < max_.y() && point.y() > min_.y() &&
+            point.z() < max_.z() && point.z() > min_.z();
+
+      if (remove_outside_){
+        ans = !ans;
+      }
+
+      return ans;
     }
     std::string box_frame_;
     laser_geometry::LaserProjection projector_;
@@ -211,6 +225,7 @@ class LaserScanBoxFilter : public filters::FilterBase<sensor_msgs::msg::LaserSca
 
     // defines two opposite corners of the box
     Point min_, max_;
+    bool remove_outside_;
     bool up_and_running_;
   };
 
